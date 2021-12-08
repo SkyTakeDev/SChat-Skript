@@ -1,0 +1,67 @@
+options:
+	prefix: &c&lITEMSUCHT &8»
+	guiname: &c&lITEMSUCHT &8&l» &9&lChat
+	chat-format: %placeholder ""luckperms_prefix"" from player% &8| &7%player's name% &8» &7%message%
+	color-chat-format: %placeholder ""luckperms_prefix"" from player% &8| &7%player's name% &8» &7%colored message%
+	teamchat-format: &6&l@TEAM &8| &7%player% &8» &7%message%
+	chat-moderation-permission:	it.chat.mod
+	chat-format-normal:	it.chat.normal
+	chat-format-normal-extra:	it.chat.normal.extra
+	chat-format-color:	it.color.use
+	chat-gui-permission: it.chat.gui
+	chat-toggle-permission: it.chat.toggle
+
+on chat:
+	if player has permission "{@chat-moderation-permission}":
+		loop all players:
+			if message contains "%loop-player%":
+				replace all "%loop-player%" with "&b@%loop-player%&7" in message
+		if message starts with "@team":
+			cancel event
+			replace all "@team" in message with ""
+			loop all players:
+				if loop-player has permission "{@chat-moderation-permission}":
+					send "{@teamchat-format}" to loop-player
+		
+		else:
+			cancel event
+			broadcast "&8»"
+			broadcast "{@color-chat-format}"
+			broadcast "&8»"
+	if player has permission "{@chat-format-normal}":
+		cancel event
+		broadcast "{@chat-format}"
+	if player has permission "{@chat-format-color}":
+		cancel event
+		broadcast "{@color-chat-format}"
+	if player has permission "{@chat-format-normal-extra}":
+		cancel event
+		broadcast "&8»"
+		broadcast "{@color-chat-format}"
+		broadcast "&8»"
+
+command /chat:
+	trigger:
+		if player has permission "{@chat-gui-permission}":
+			wait 3 ticks
+			open chest with 1 rows named "{@guiname}" to player
+			wait 3 ticks
+			format slot 1 of player with paper named "&cChat leeren" to close then run [execute player command "/cc"]
+			format slot 3 of player with Lime Concrete named "&aChat aktivieren" to close then run [execute player command "/togglechat on"]
+			format slot 5 of player with Red Concrete named "&cChat deaktivieren" to close then run [execute player command "/togglechat off"]
+			format slot 7 of player with Barrier named "&cMenü schließen" to close
+		else:
+			send "{@prefix} &7Keine Rechte!"
+			stop trigger
+
+command /togglechat <text>:
+	usage: {@prefix} &7Benutze: &b/togglechat <on/off>
+	permission: {@chat-toggle-permission}
+	permission message: {@prefix} &7Keine Rechte!
+	trigger:
+		if argument 1 is "off":
+			broadcast "{@prefix} &7Der Chat wurde &bdeaktiviert&7."
+			set {mute.chat} to true
+		if argument 1 is "on":
+			broadcast "{@prefix} &7Der Chat wurde &baktiviert&7."
+			set {mute.chat} to false
